@@ -1,11 +1,8 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore } from "firebase/firestore";
+import { getAuth, signInAnonymously, onAuthStateChanged, updateProfile } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBNA7xaoiynpwD8j3rE3qB9-daUnmDIbno",
   authDomain: "doodlefinder.firebaseapp.com",
@@ -16,6 +13,24 @@ const firebaseConfig = {
   measurementId: "G-2H7VRGX2VY"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// PUBLIC_INTERFACE
+export const db = getFirestore(app);
+// PUBLIC_INTERFACE
+export const auth = getAuth(app);
+// PUBLIC_INTERFACE
+export const storage = getStorage(app);
+
+// PUBLIC_INTERFACE
+export const anonymousSignIn = async (displayName) => {
+  await signInAnonymously(auth);
+  if (displayName) {
+    await updateProfile(auth.currentUser, { displayName });
+  }
+};
+
+// PUBLIC_INTERFACE
+export const listenToAuth = (cb) => {
+  return onAuthStateChanged(auth, cb);
+};
