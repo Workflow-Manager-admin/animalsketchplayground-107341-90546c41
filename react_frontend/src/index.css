@@ -2,13 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gradient-to-br from-[#f6fff9] to-[#e4f0ff] font-body text-primary min-h-screen antialiased;
+html, body {
+  @apply bg-gradient-to-br from-background-gradient1 to-background-gradient2 font-body text-primary min-h-screen antialiased transition-colors duration-300;
   font-size: 17px;
   line-height: 1.57;
+  min-height: 100dvh;
+}
+
+body {
+  margin: 0;
+  padding: 0;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent-pink/40 rounded;
+}
+::-webkit-scrollbar {
+  @apply bg-background-gradient2/40 h-2 w-2;
+}
+
+/* Responsive section padding and layout helpers */
+.section {
+  @apply w-full mx-auto max-w-5xl px-2 sm:px-6 lg:px-8;
+}
+
+/* Overriding form for accent border/fill if DaisyUI present */
+form {
+  border-radius: 1.3rem !important;
+  background: rgba(255,255,255,0.83) !important;
+  box-shadow: 0 1.5px 40px 7px #fbbf2418, 0 2px 24px 1px #4e73df09 !important;
+}
+
+input, .input {
+  @apply bg-background text-primary outline-none w-full rounded-full border-2 border-accent-pink/20 px-4 py-2 transition-all focus:ring focus:ring-accent-pink/40 font-body;
+  box-shadow: 0 1px 10px 1px #3b82f606;
+}
+
+input:focus, .input:focus {
+  border-color: #4e73df;
+}
+
+button:focus, .btn:focus, input:focus, .focus\:outline {
+  outline: 3px solid var(--focus-outline);
+  outline-offset: 2px;
+}
+
+a {
+  @apply text-primary underline-offset-2 decoration-wavy font-titleAlt transition-colors duration-150;
+  text-decoration: none;
+}
+a:hover {
+  color: #fbbf24;
 }
