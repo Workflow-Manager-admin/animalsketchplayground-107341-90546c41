@@ -44,16 +44,22 @@ export default function Drawing({ user, onBack }) {
     setUploading(true);
     setError("");
     setSubmitted(true);
+
     try {
       // Store image in Firebase Storage
-      const filename = `drawings/${Date.now()}_${Math.random()}.png`;
+      const filename = `drawings/${Date.now()}_${Math.floor(Math.random()*100000)}.png`;
       const storageRef = ref(storage, filename);
       await uploadString(storageRef, dataUrl, "data_url");
       const imageUrl = await getDownloadURL(storageRef);
+
+      // Defensive: check user (should be present, but handle null)
+      const userId = user && user.uid ? user.uid : "anonymous";
+      const username = user && user.displayName ? user.displayName : "Unknown";
+
       // Add document to Firestore
       await addDoc(collection(db, "drawings"), {
-        user: user?.uid,
-        username: user?.displayName,
+        user: userId,
+        username: username,
         prompt,
         animal: prompt, // prompt is the animal e.g. "monkey"
         imageUrl,
@@ -61,8 +67,15 @@ export default function Drawing({ user, onBack }) {
         createdAt: Date.now(),
       });
       setSuccess(true);
-    } catch (error) {
-      setError("Failed to upload drawing. Please check your connection and try again.");
+    } catch (err) {
+      let msg = "Failed to upload drawing. Please check your connection and try again.";
+      if (err && err.message) {
+        msg += " (" + err.message + ")";
+      }
+      setError(msg);
+      // Log error in browser console for developer troubleshooting
+      // eslint-disable-next-line no-console
+      console.error("Drawing upload/save error:", err);
     }
     setUploading(false);
   };
@@ -86,7 +99,7 @@ export default function Drawing({ user, onBack }) {
     );
 
   // Error alert component
-  function ErrorBanner({ message }) {
+  function ErrorBanner({ message, showRetry, onRetry }) {
     if (!message) return null;
     return (
       <motion.div
@@ -96,7 +109,18 @@ export default function Drawing({ user, onBack }) {
         exit={{ scale: 0.8, y: 0, opacity: 0 }}
         role="alert"
       >
-        <XCircle className="w-5 h-5" /> {message}
+        <XCircle className="w-5 h-5" /> <span>{message}</span>
+        {showRetry && (
+          <button
+            className="ml-3 btn btn-sm btn-accent font-titleAlt rounded-full px-3"
+            onClick={onRetry}
+            disabled={uploading}
+            style={{ marginLeft: 16 }}
+            aria-label="Retry Saving Drawing"
+          >
+            Retry
+          </button>
+        )}
       </motion.div>
     );
   }
@@ -115,8 +139,19 @@ export default function Drawing({ user, onBack }) {
         <span className="text-accent-pink">🎨</span> Add a Drawing!
       </motion.h1>
       <PromptSpin onPrompt={handlePrompt} />
-      {/* Show error banner below spinner if error related to prompt/flow */}
-      <ErrorBanner message={error} />
+      {/* Show error banner below spinner if error related to prompt/flow.
+          Show Retry button only if an upload was submitted and failed (not prompt-missing error). */}
+      <ErrorBanner
+        message={error}
+        showRetry={!!error && submitted && !uploading}
+        onRetry={() => {
+          setError("");
+          setSuccess(false);
+          setUploading(false);
+          // User can resubmit; DrawingCanvas will call handleFinishDrawing on 'Submit!'
+          setSubmitted(false);
+        }}
+      />
       {prompt && (
         <div className="mt-4 w-full max-w-md drawing-canvas-main fade-in-up">
           <DrawingCanvas
