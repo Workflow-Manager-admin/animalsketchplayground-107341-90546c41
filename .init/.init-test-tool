@@ -1,0 +1,4 @@
+{
+    "command": "npm run test",
+    "working_directory": "/home/kavia/workspace/code-generation/animalsketchplayground-107341-90546c41/react_frontend"
+}
