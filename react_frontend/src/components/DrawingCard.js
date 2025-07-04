@@ -39,7 +39,9 @@ export default function DrawingCard({
         alt="User drawing"
         className="rounded-lg w-full max-h-44 object-contain bg-gradient-to-t from-background-gradient1"
       />
-      <div className="font-bold text-primary text-base md:text-lg mt-2">{drawing.prompt}</div>
+      <div className="font-bold text-primary text-base md:text-lg mt-2 capitalize">
+        {drawing.animal}
+      </div>
       <form onSubmit={handleGuess} className="flex gap-2 mt-2">
         <input
           className="input input-bordered rounded-full flex-1 !bg-background"

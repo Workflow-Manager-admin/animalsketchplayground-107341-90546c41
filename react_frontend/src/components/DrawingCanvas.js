@@ -74,9 +74,18 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt }) {
     <motion.div layout className="w-full flex flex-col items-center">
       <AnimatePresence>
         {timer > 0 && (
-          <div className="text-center font-bold mb-2 text-primary">
-            Drawing time left: <span className="font-mono text-highlight">{timer}s</span>
-          </div>
+          <motion.div
+            className="mb-2 flex flex-col items-center"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 160 }}
+          >
+            <div className="text-xs text-gray-400 mb-1 font-titleAlt">Timer</div>
+            <span className="inline-block font-titleAlt text-3xl px-3 py-1 rounded-lg bg-highlight/90 text-white shadow"
+              style={{ letterSpacing: "0.04em" }}>
+              {timer}s
+            </span>
+          </motion.div>
         )}
       </AnimatePresence>
       <canvas

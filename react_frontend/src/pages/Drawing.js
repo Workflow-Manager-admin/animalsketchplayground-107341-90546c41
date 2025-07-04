@@ -30,7 +30,7 @@ export default function Drawing({ user, onBack }) {
         user: user?.uid,
         username: user?.displayName,
         prompt,
-        animal: prompt.split(" ").pop(),
+        animal: prompt,  // prompt is now just the animal word e.g. "monkey"
         imageUrl,
         guessesCount: 0,
         createdAt: Date.now()
@@ -76,9 +76,16 @@ export default function Drawing({ user, onBack }) {
         </div>
       )}
       {uploading && (
-        <div className="flex flex-col gap-2 items-center mt-4 text-primary">
-          <Loader2 className="animate-spin w-10 h-10" />
-          Uploading drawing...
+        <div className="flex flex-col gap-2 items-center mt-4">
+          <motion.div
+            initial={{ scale: 0.8, rotate: -12 }}
+            animate={{ scale: [0.8, 1.1, 1], rotate: [0, 14, 0] }}
+            transition={{ repeat: Infinity, duration: 1.2, repeatType: "reverse" }}
+            className="bg-highlight/90 rounded-full p-4 drop-shadow-xl flex items-center justify-center"
+          >
+            <Loader2 className="animate-spin w-12 h-12 text-primary" />
+          </motion.div>
+          <div className="font-titleAlt text-lg text-accent-pink mt-2 tracking-tight">Uploading your amazing doodle...</div>
         </div>
       )}
     </div>
