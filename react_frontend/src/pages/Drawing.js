@@ -45,19 +45,29 @@ export default function Drawing({ user, onBack }) {
     setError("");
     setSubmitted(true);
 
+    const feedbackLog = [];
     try {
-      // Store image in Firebase Storage
+      // 1. Store image in Firebase Storage
       const filename = `drawings/${Date.now()}_${Math.floor(Math.random()*100000)}.png`;
       const storageRef = ref(storage, filename);
+      feedbackLog.push("Serializing drawing as PNG...");
+      console.log("[Drawing Upload] Begin upload: " + filename);
+
+      // Defensive: check dataUrl
+      if (!dataUrl.startsWith("data:image/png")) {
+        throw new Error("Drawing serialization failed (not a PNG dataUrl).");
+      }
+
+      feedbackLog.push("Uploading to Firebase Storage...");
       await uploadString(storageRef, dataUrl, "data_url");
+      feedbackLog.push("Getting download URL...");
       const imageUrl = await getDownloadURL(storageRef);
 
-      // Defensive: check user (should be present, but handle null)
+      // 2. Firestore doc with drawing/metadata
       const userId = user && user.uid ? user.uid : "anonymous";
       const username = user && user.displayName ? user.displayName : "Unknown";
-
-      // Add document to Firestore
-      await addDoc(collection(db, "drawings"), {
+      feedbackLog.push("Saving drawing information to Firestore...");
+      const docRef = await addDoc(collection(db, "drawings"), {
         user: userId,
         username: username,
         prompt,
@@ -66,16 +76,28 @@ export default function Drawing({ user, onBack }) {
         guessesCount: 0,
         createdAt: Date.now(),
       });
+
+      feedbackLog.push("Upload complete!");
       setSuccess(true);
+      // eslint-disable-next-line no-console
+      console.log("[Drawing Upload] Success:", {filename, imageUrl, firestoreId: docRef.id});
     } catch (err) {
       let msg = "Failed to upload drawing. Please check your connection and try again.";
+      if (err && err.code === "storage/unauthorized") {
+        msg = "App does not have permission to upload drawings. Please check Firebase storage security rules!";
+      } else if (err && err.code === "permission-denied") {
+        msg = "You do not have permission to save drawings (Firestore permission denied).";
+      }
       if (err && err.message) {
         msg += " (" + err.message + ")";
       }
-      setError(msg);
-      // Log error in browser console for developer troubleshooting
+      if (err && err.stack) {
+        // eslint-disable-next-line no-console
+        console.error("[Drawing Upload - Stacktrace]:", err.stack);
+      }
+      setError(msg + (feedbackLog.length ? "\nUpload steps: " + feedbackLog.join(" → ") : ""));
       // eslint-disable-next-line no-console
-      console.error("Drawing upload/save error:", err);
+      console.error("[Drawing Upload Error]:", err);
     }
     setUploading(false);
   };

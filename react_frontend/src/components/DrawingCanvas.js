@@ -170,12 +170,17 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt }) {
         className={`w-full touch-none rounded-lg bg-gradient-to-tr from-background-gradient1 to-background-gradient2 shadow-lg ${
           tool === "pen" ? "cursor-crosshair" : "cursor-pointer"
         }`}
-        width={360}
-        height={210}
+        width={480}
+        height={window.innerHeight ? Math.round(window.innerHeight * 0.38) : 350}
         style={{
-          maxWidth: "95vw",
-          maxHeight: "310px",
+          width: "100%",
+          height: "min(52vh, 420px)",
+          minHeight: "250px",
+          maxHeight: "62vh",
+          maxWidth: "98vw",
           border: "2px solid #e4f0ff",
+          objectFit: "contain",
+          display: "block",
         }}
         onMouseDown={startDraw}
         onMouseUp={endDraw}
