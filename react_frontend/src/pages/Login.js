@@ -4,6 +4,10 @@ import { anonymousSignIn } from "../firebase";
 import mascot from "../assets/mascot.svg";
 
 // PUBLIC_INTERFACE
+/**
+ * Login Page for playful, modern minimal UI.
+ * Soft backgrounds, animated mascot, bubbly accent blobs, large rounded input and card.
+ */
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);

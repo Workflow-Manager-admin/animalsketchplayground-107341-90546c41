@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { RefreshCcw, PawPrint } from "lucide-react";
 
-// Unified, minimal, playful animal prompt list
+// Modern, minimal, playful animal prompt list
 const ANIMAL_PROMPTS = [
   "monkey", "sparrow", "whale", "cat", "dog", "elephant", "lion", "penguin", "owl", "rabbit", "giraffe", "bear"
 ];
 
 // PUBLIC_INTERFACE
+/**
+ * PromptSpin: Large, soft, pastel animal picker spinner.
+ * Animated with Framer Motion and Lucide icon, lists possible animals underneath for playful UX.
+ */
 export default function PromptSpin({ onPrompt }) {
   const [prompt, setPrompt] = useState("");
   const [spinning, setSpinning] = useState(false);
@@ -31,10 +35,10 @@ export default function PromptSpin({ onPrompt }) {
     <div className="flex flex-col items-center gap-2">
       <motion.button
         key={String(spinning)}
-        className="rounded-full bg-highlight p-8 shadow-xl mb-2 border-4 border-white hover:shadow-2xl transition-transform hover:scale-110"
+        className="prompt-spin rounded-full bg-highlight p-8 shadow-xl mb-2 border-4 border-white hover:shadow-2xl transition-transform hover:scale-110"
         onClick={spin}
         animate={{ rotate: spinning ? 540 : 0, scale: spinning ? 1.27 : 1 }}
-        transition={{ duration: spinning ? 1.0 : 0.4, ease: "backOut" }}
+        transition={{ duration: spinning ? 1.0 : 0.44, ease: "backOut" }}
         disabled={spinning}
         aria-label="Spin for an animal prompt"
       >

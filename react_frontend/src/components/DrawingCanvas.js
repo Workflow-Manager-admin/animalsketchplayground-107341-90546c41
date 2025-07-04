@@ -3,88 +3,70 @@ import { Loader2, Undo2, Eraser, Send, X, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
- * 45s drawable canvas, disabling submit prior to 10s.
- * Integrates clean toggling between pencil and eraser modes, allowing smooth transition and proper stroke/eraser handling.
+ * DrawingCanvas provides a full-bleed, modern pastel-style canvas.
+ * 45s timer, disables submit for first 10s, responsive layout, playful icon controls below.
+ * Large tap targets, soft focus, pastel backgrounds.
  */
 // PUBLIC_INTERFACE
-/**
- * PUBLIC_INTERFACE
- * DrawingCanvas renders a canvas area that fills as much height as possible, with controls docked beneath.
- * Accepts optional `height` prop to override or hint vertical sizing for flexibility.
- */
 export default function DrawingCanvas({ onFinish, disabled = false, prompt, height }) {
   const canvasRef = useRef();
   const [drawing, setDrawing] = useState(false);
   const [timer, setTimer] = useState(45);
   const [canSubmit, setCanSubmit] = useState(false);
   const [reset, setReset] = useState(0);
-  const [tool, setTool] = useState("pen"); // "pen" or "eraser"
+  const [tool, setTool] = useState("pen");
   const [lastPoint, setLastPoint] = useState(null);
 
-  // Tool Styles
+  // Styles for pen/eraser, pastel/soft accent
   const PEN = {
-    strokeStyle: "#6366f1",
+    strokeStyle: "#6366f1", // indigo
     lineWidth: 5,
     globalAlpha: 0.93,
-    lineCap: "round",
+    lineCap: "round"
   };
   const ERASER = {
     strokeStyle: "#fff",
     lineWidth: 18,
     globalAlpha: 1,
-    lineCap: "round",
+    lineCap: "round"
   };
 
   useEffect(() => {
     let id;
     if (!disabled && timer > 0) {
-      id = setTimeout(() => setTimer((t) => t - 1), 1000);
-      if (timer <= 35) setCanSubmit(true); // at least 10s elapsed
+      id = setTimeout(() => setTimer(t => t - 1), 1000);
+      if (timer <= 35) setCanSubmit(true);
     }
     return () => clearTimeout(id);
   }, [timer, disabled]);
 
-  useEffect(() => {
-    if (disabled) setTimer(45);
-  }, [disabled]);
+  useEffect(() => { if (disabled) setTimer(45); }, [disabled]);
 
-  // Utility to get [x, y] coordinates
-  const getPointer = (e) => {
+  // Drawing logic (touch + mouse)
+  const getPointer = e => {
     const rect = canvasRef.current.getBoundingClientRect();
-    if (e.touches) {
+    if (e.touches)
       return [
         e.touches[0].clientX - rect.left,
-        e.touches[0].clientY - rect.top,
+        e.touches[0].clientY - rect.top
       ];
-    }
-    // Mouse event
     return [
       e.nativeEvent?.offsetX !== undefined
         ? e.nativeEvent.offsetX
         : e.clientX - rect.left,
       e.nativeEvent?.offsetY !== undefined
         ? e.nativeEvent.offsetY
-        : e.clientY - rect.top,
+        : e.clientY - rect.top
     ];
   };
-
-  // Set drawing attributes on the context
   const applyToolStyle = (ctx, currentTool = tool) => {
     if (currentTool === "pen") {
-      ctx.strokeStyle = PEN.strokeStyle;
-      ctx.lineWidth = PEN.lineWidth;
-      ctx.globalAlpha = PEN.globalAlpha;
-      ctx.lineCap = PEN.lineCap;
+      Object.assign(ctx, PEN);
     } else {
-      ctx.strokeStyle = ERASER.strokeStyle;
-      ctx.lineWidth = ERASER.lineWidth;
-      ctx.globalAlpha = ERASER.globalAlpha;
-      ctx.lineCap = ERASER.lineCap;
+      Object.assign(ctx, ERASER);
     }
   };
-
-  // Drawing state handling (mouse/touch)
-  const startDraw = (e) => {
+  const startDraw = e => {
     if (disabled) return;
     setDrawing(true);
     const [x, y] = getPointer(e);
@@ -94,8 +76,7 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt, heig
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
-
-  const draw = (e) => {
+  const draw = e => {
     if (!drawing || disabled || !canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
     applyToolStyle(ctx);
@@ -108,30 +89,22 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt, heig
       setLastPoint([x, y]);
     }
   };
-
   const endDraw = () => {
     setDrawing(false);
     setLastPoint(null);
     const ctx = canvasRef.current.getContext("2d");
     ctx.beginPath();
   };
-
-  // Clear/Undo (full reset)
+  // Controls
   const resetCanvas = () => {
-    setReset((r) => r + 1);
+    setReset(r => r + 1);
     const ctx = canvasRef.current.getContext("2d");
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     ctx.beginPath();
   };
-
-  // Toggle between pen and eraser
-  const toggleTool = () => {
-    setTool((t) => (t === "pen" ? "eraser" : "pen"));
-  };
-
-  // Keyboard shortcut for eraser (optional)
+  const toggleTool = () => setTool(t => (t === "pen" ? "eraser" : "pen"));
   useEffect(() => {
-    const handler = (e) => {
+    const handler = e => {
       if (disabled) return;
       if (e.key === "e") setTool("eraser");
       if (e.key === "p") setTool("pen");
@@ -139,31 +112,18 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt, heig
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [disabled]);
-
   const submit = () => {
     if (!canSubmit || disabled || timer <= 0) return;
-    // png base64 from canvas
     const dataUrl = canvasRef.current.toDataURL("image/png");
     onFinish?.(dataUrl);
   };
 
-  // Icon for current tool
   const toolIcon = tool === "pen" ? <Pencil /> : <Eraser />;
-
-  // Vertical layout: timer above, canvas fills space, controls and info below.
-  // Maximize canvas height using flexbox and dynamic sizing.
-  // Responsive tweaks for mobile.
-  // The parent is expected to be flex-1 or have plenty of height.
-
-  // Compute canvas height: use the `height` prop if provided (css string or number),
-  // otherwise default to a tall value based on viewport, capped for desktop.
   let cssCanvasHeight = height
     ? height
     : window.innerHeight
     ? Math.max(window.innerHeight * 0.54, 340)
     : 380;
-
-  // Ensure string value for inline style
   if (typeof cssCanvasHeight === "number") cssCanvasHeight = cssCanvasHeight + "px";
 
   return (
@@ -202,9 +162,11 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt, heig
       >
         <canvas
           ref={canvasRef}
-          className={`w-full touch-none rounded-xl bg-gradient-to-tr from-background-gradient1 to-background-gradient2 shadow-xl ${tool === "pen" ? "cursor-crosshair" : "cursor-pointer"}`}
+          className={`w-full touch-none rounded-xl bg-gradient-to-tr from-background-gradient1 to-background-gradient2 shadow-xl ${
+            tool === "pen" ? "cursor-crosshair" : "cursor-pointer"
+          }`}
           width={480}
-          height={parseInt(cssCanvasHeight) || 400} // px, matches visual height
+          height={parseInt(cssCanvasHeight) || 400}
           style={{
             width: "100%",
             height: cssCanvasHeight,
@@ -227,7 +189,7 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt, heig
           onTouchMove={draw}
         />
       </div>
-      {/* Controls and status, docked below in tighter vertical block */}
+      {/* Controls, playful microanimation + icons */}
       <div className="flex flex-row flex-wrap gap-2 mt-2 items-center justify-center w-full" style={{ paddingBottom: 2, marginTop: 10 }}>
         <button
           title="Undo/Clear"
@@ -262,7 +224,9 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt, heig
             : "🧽 Erase (touch or mouse)"}
         </span>
         {!canSubmit && (
-          <span className="ml-2 text-warning">Draw for at least 10s to enable submit.</span>
+          <span className="ml-2 text-warning">
+            Draw for at least 10s to enable submit.
+          </span>
         )}
       </div>
       {timer <= 0 && (

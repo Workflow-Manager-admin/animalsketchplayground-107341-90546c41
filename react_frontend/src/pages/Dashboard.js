@@ -6,6 +6,10 @@ import AnimatedFloatingActions from "../components/AnimatedFloatingActions";
 import { motion } from "framer-motion";
 
 // PUBLIC_INTERFACE
+/**
+ * Dashboard: pastel grid of top drawings sorted by guessesCount, with floating action and playful header.
+ * Responsive, soft grid, focus on animated transitions and bold titles.
+ */
 export default function Dashboard({ onAddDrawing }) {
   const [drawings, setDrawings] = useState([]);
   useEffect(() => {
@@ -16,10 +20,10 @@ export default function Dashboard({ onAddDrawing }) {
     return unsub;
   }, []);
 
-  // Map from drawing.id -> wrong guesses by local user (in production, would want per-user store)
+  // Map from drawing.id -> wrong guesses by local user (in production, per-user store would be used)
   const [guessedWrong, setGuessedWrong] = useState({});
 
-  const handleGuess = (drawingId) => (guess) => {
+  const handleGuess = drawingId => guess => {
     // Compare lowercased (in real app: store hashes, etc.)
     const d = drawings.find(x => x.id === drawingId);
     if (!d) return false;
@@ -31,7 +35,7 @@ export default function Dashboard({ onAddDrawing }) {
         ? []
         : [...(prev[drawingId] || []), guess]
     }));
-    // Could add to global guesses list in Firestore as well for statistics
+    // Could add to global guesses list in Firestore for statistics
     return isCorrect;
   };
 
@@ -59,7 +63,6 @@ export default function Dashboard({ onAddDrawing }) {
             <DrawingCard
               key={drawing.id}
               drawing={drawing}
-              // Top card gets highlight
               isTop={i === 0}
               userGuessHistory={guessedWrong[drawing.id] || []}
               onSubmitGuess={handleGuess(drawing.id)}
