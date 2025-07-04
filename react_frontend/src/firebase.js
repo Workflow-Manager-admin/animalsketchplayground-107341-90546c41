@@ -7,7 +7,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBNA7xaoiynpwD8j3rE3qB9-daUnmDIbno",
   authDomain: "doodlefinder.firebaseapp.com",
   projectId: "doodlefinder",
-  storageBucket: "doodlefinder.firebasestorage.app",
+  storageBucket: "doodlefinder.appspot.com", // correct Firebase Storage bucket
   messagingSenderId: "306458973633",
   appId: "1:306458973633:web:5862a96764e4bd75a6cb40",
   measurementId: "G-2H7VRGX2VY"
@@ -22,15 +22,29 @@ export const auth = getAuth(app);
 // PUBLIC_INTERFACE
 export const storage = getStorage(app);
 
-// PUBLIC_INTERFACE
+/** 
+ * PUBLIC_INTERFACE
+ * Perform Firebase Anonymous sign in and set the user's displayName if provided.
+ * Returns { user, error }.
+ */
 export const anonymousSignIn = async (displayName) => {
-  await signInAnonymously(auth);
-  if (displayName) {
-    await updateProfile(auth.currentUser, { displayName });
+  try {
+    const res = await signInAnonymously(auth);
+    if (displayName && auth.currentUser) {
+      await updateProfile(auth.currentUser, { displayName });
+    }
+    return { user: auth.currentUser, error: null };
+  } catch (error) {
+    // Expose error info for UI
+    return { user: null, error };
   }
 };
 
-// PUBLIC_INTERFACE
+/**
+ * PUBLIC_INTERFACE
+ * Listens to Firebase Auth state changes. Passes user object or null to callback.
+ * Returns the unsubscribe function.
+ */
 export const listenToAuth = (cb) => {
   return onAuthStateChanged(auth, cb);
 };

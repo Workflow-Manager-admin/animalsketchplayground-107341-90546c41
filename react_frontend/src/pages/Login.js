@@ -8,13 +8,22 @@ export default function Login({ onLogin }) {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Handles username submit and authentication with Firebase
+  const [error, setError] = useState(null);
   const doLogin = async (e) => {
     e.preventDefault();
     if (!username.trim()) return;
     setLoading(true);
-    await anonymousSignIn(username.trim());
+    setError(null);
+    const { error } = await anonymousSignIn(username.trim());
     setLoading(false);
-    if (onLogin) onLogin();
+    if (error) {
+      setError(
+        "Failed to sign in. Please check your connection or try again."
+      );
+    } else if (onLogin) {
+      onLogin();
+    }
   };
 
   return (
@@ -55,6 +64,11 @@ export default function Login({ onLogin }) {
         >
           {loading ? "Joining..." : "Start Playing"}
         </motion.button>
+        {error && (
+          <div className="text-error text-sm mt-2 text-center">
+            {error}
+          </div>
+        )}
       </form>
       <motion.div
         className="absolute left-0 right-0 -z-10 h-full overflow-hidden pointer-events-none"
