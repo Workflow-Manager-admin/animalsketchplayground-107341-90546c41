@@ -20,9 +20,6 @@ export default function Drawing({ user, onBack }) {
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  // This state tells if user completed drawing AFTER timer and a prompt is assigned.
-  const [canSubmit, setCanSubmit] = useState(false);
-
   // Called by PromptSpin
   const handlePrompt = (p) => {
     setPrompt(p);
@@ -31,7 +28,6 @@ export default function Drawing({ user, onBack }) {
     setDrawingUrl("");
     setSuccess(false);
     setSubmitted(false);
-    setCanSubmit(false);
   };
 
   // Set by DrawingCanvas after drawing is finished (user hits Submit)
@@ -71,23 +67,19 @@ export default function Drawing({ user, onBack }) {
     setUploading(false);
   };
 
-  // This handler is called by DrawingCanvas when eligible for submission (45s elapsed/timer up)
-  // In our component, the DrawingCanvas controls timing and submit logic. We bring down canSubmit to enable final UI.
-  // To improve UX, use DrawingCanvas onFinish callback always, but condition button in DrawingCanvas only after 10s elapsed (see DrawingCanvas logic).
-
   // If submitted and successful
   if (success)
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-2">
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-2 fade-in-pop">
         <motion.div
           initial={{ scale: 0.2, rotate: -40, opacity: 0.4 }}
           animate={{ scale: 1, rotate: 0, opacity: 1 }}
-          className="rounded-full p-9 mb-2 bg-info/90 text-white drop-shadow-2xl"
+          className="rounded-full p-8 mb-2 bg-success/90 text-white drop-shadow-2xl mascot-img"
         >
-          <ArrowLeft className="w-9 h-9 rotate-45" />
+          <ArrowLeft className="w-12 h-12 rotate-45" />
         </motion.div>
-        <div className="text-2xl font-titleAlt text-success mb-3">Drawing posted!</div>
-        <button className="btn btn-primary px-6 rounded-full" onClick={onBack}>
+        <div className="text-3xl font-titleAlt text-success mb-3">Drawing posted!</div>
+        <button className="prominent-action" onClick={onBack}>
           Back to Dashboard
         </button>
       </div>
@@ -110,21 +102,23 @@ export default function Drawing({ user, onBack }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background-gradient2 to-background-gradient1 px-3 py-7 relative">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[#e4f0ff] to-[#f6fff9] px-3 py-7 relative">
       <button
         onClick={onBack}
-        className="btn btn-link absolute top-4 left-4 btn-sm text-primary"
+        className="btn btn-link absolute top-4 left-4 btn-sm text-primary font-titleAlt"
         disabled={uploading}
         tabIndex={uploading ? -1 : 0}
       >
         <ArrowLeft /> Back
       </button>
-      <h1 className="font-titleAlt text-2xl text-primary mb-3">🎨 Add a Drawing!</h1>
+      <motion.h1 className="font-titleAlt text-3xl md:text-4xl text-primary mb-3 flex gap-2 fade-in-pop" layout>
+        <span className="text-accent-pink">🎨</span> Add a Drawing!
+      </motion.h1>
       <PromptSpin onPrompt={handlePrompt} />
       {/* Show error banner below spinner if error related to prompt/flow */}
       <ErrorBanner message={error} />
       {prompt && (
-        <div className="mt-4 w-full max-w-md">
+        <div className="mt-4 w-full max-w-md drawing-canvas-main fade-in-up">
           <DrawingCanvas
             disabled={uploading}
             prompt={prompt}
@@ -133,23 +127,22 @@ export default function Drawing({ user, onBack }) {
         </div>
       )}
       {!prompt && !uploading && (
-        <div className="mt-2 text-base text-accent-pink/80 font-titleAlt flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4" />
-          Spin for an animal prompt to start!
+        <div className="mt-5 text-base text-accent-pink/90 font-titleAlt flex items-center gap-2 fade-in-up">
+          <AlertTriangle className="w-4 h-4 mr-1" /> Spin for an animal prompt to start!
         </div>
       )}
       {uploading && (
-        <div className="flex flex-col gap-2 items-center mt-6">
+        <div className="flex flex-col gap-2 items-center mt-8">
           <motion.div
             initial={{ scale: 0.8, rotate: -12 }}
             animate={{
               scale: [0.8, 1.1, 1],
               rotate: [0, 14, 0],
             }}
-            transition={{ repeat: Infinity, duration: 1.2, repeatType: "reverse" }}
-            className="bg-highlight/90 rounded-full p-4 drop-shadow-xl flex items-center justify-center"
+            transition={{ repeat: Infinity, duration: 1.18, repeatType: "reverse" }}
+            className="bg-accent/90 rounded-full p-5 drop-shadow-xl mascot-img flex items-center justify-center"
           >
-            <Loader2 className="animate-spin w-12 h-12 text-primary" />
+            <Loader2 className="animate-spin w-14 h-14 text-primary" />
           </motion.div>
           <div className="font-titleAlt text-lg text-accent-pink mt-2 tracking-tight">
             Uploading your amazing doodle...

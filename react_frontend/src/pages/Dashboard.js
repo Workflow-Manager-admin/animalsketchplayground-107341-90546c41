@@ -3,6 +3,7 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 import DrawingCard from "../components/DrawingCard";
 import AnimatedFloatingActions from "../components/AnimatedFloatingActions";
+import { motion } from "framer-motion";
 
 // PUBLIC_INTERFACE
 export default function Dashboard({ onAddDrawing }) {
@@ -35,14 +36,25 @@ export default function Dashboard({ onAddDrawing }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background-gradient1 to-background-gradient2 py-8 px-2 flex flex-col items-center">
-      <h2 className="font-titleAlt text-3xl text-primary mb-5 tracking-tight animate__bounceIn">
+    <section className="w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-[#f6fff9] to-[#e4f0ff] pb-10">
+      <motion.h2
+        className="font-titleAlt text-4xl md:text-5xl text-primary mb-7 tracking-tight fade-in-pop flex gap-3 items-center"
+        initial={{ opacity: 0, y: -15, scale: 0.93 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.65 }}
+        aria-label="Top Drawings"
+      >
         🏆 Top Drawings
-      </h2>
+        <span className="ml-2 text-accent bg-yellow-200/55 px-3 py-1 rounded-lg font-bold text-lg tracking-tight hidden md:inline fade-in-pop">
+          New!
+        </span>
+      </motion.h2>
       {drawings.length === 0 ? (
-        <div className="text-center py-20 font-semibld text-primary">Loading drawings...</div>
+        <div className="text-center pt-20 font-semibold text-primary" aria-busy="true">
+          <span className="animate-pulse">Loading drawings...</span>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7 w-full max-w-screen-lg">
+        <div className="dashboard-grid mt-3">
           {drawings.map((drawing, i) => (
             <DrawingCard
               key={drawing.id}
@@ -56,6 +68,14 @@ export default function Dashboard({ onAddDrawing }) {
         </div>
       )}
       <AnimatedFloatingActions onClick={onAddDrawing} />
-    </div>
+      <motion.div
+        className="mt-6 mx-auto"
+        initial={{ opacity: 0, scale: 0.85 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.09 }}
+      >
+        <span className="text-accent-pink text-md font-titleAlt">Play, guess, and add your own sketch!</span>
+      </motion.div>
+    </section>
   );
 }

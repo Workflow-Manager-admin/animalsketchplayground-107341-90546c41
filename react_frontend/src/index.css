@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 body {
-  @apply bg-background font-body;
+  @apply bg-gradient-to-br from-[#f6fff9] to-[#e4f0ff] font-body text-primary min-h-screen antialiased;
+  font-size: 17px;
+  line-height: 1.57;
 }
 
 code {
