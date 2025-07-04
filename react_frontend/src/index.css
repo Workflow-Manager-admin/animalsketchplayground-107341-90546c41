@@ -2,24 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom pastel gradient backgrounds, everywhere */
 html, body {
-  @apply bg-gradient-to-br from-background-gradient1 to-background-gradient2 font-body text-primary min-h-screen antialiased transition-colors duration-300;
+  @apply bg-gradient-to-br from-background-gradient1 via-background-gradient2 to-white font-body text-primary min-h-screen antialiased transition-colors duration-300;
   font-size: 17px;
   line-height: 1.57;
   min-height: 100dvh;
+  background: linear-gradient(145deg, #f6fff9 5%, #e4f0ff 65%, #fff9e3 100%);
 }
 
 body {
   margin: 0;
   padding: 0;
+  font-family: 'Inter', 'Open Sans', 'Nunito', 'Quicksand', Arial, Helvetica, sans-serif;
+}
+
+/* Ensure ALL major font tokens are available and used for display */
+.font-titleAlt, h1, h2, h3, .font-title {
+  font-family: 'Bungee', 'Poppins', 'Fredoka', 'system-ui', cursive, sans-serif;
+  font-weight: 700;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+/* Scrollbar pastel, accent and soft rounded */
 ::-webkit-scrollbar-thumb {
   @apply bg-accent-pink/40 rounded;
+  background: #ff6b81cc !important;
 }
 ::-webkit-scrollbar {
   @apply bg-background-gradient2/40 h-2 w-2;
@@ -30,7 +41,7 @@ code {
   @apply w-full mx-auto max-w-5xl px-2 sm:px-6 lg:px-8;
 }
 
-/* Overriding form for accent border/fill if DaisyUI present */
+/* Global form fields: floating, playful, pastel accent */
 form {
   border-radius: 1.3rem !important;
   background: rgba(255,255,255,0.83) !important;
@@ -46,15 +57,107 @@ input:focus, .input:focus {
   border-color: #4e73df;
 }
 
+/* Animated playful pulse for prominent btns/inputs */
+.prominent-action, .floating-action-btn {
+  @apply shadow-xl border-2 border-white rounded-full px-7 py-3 font-titleAlt bg-gradient-to-r from-primary to-accent-pink hover:from-accent-pink hover:to-primary focus:outline-accent-pink transition-transform;
+  box-shadow: 0 10px 32px 0px #fbbf2457, 0 4px 8px #4e73df1b;
+  animation: accent-pop 0.9s cubic-bezier(.41,1.36,.29,1);
+}
+@keyframes accent-pop {
+  0% {transform: scale(.5);}
+  60%{transform: scale(1.18);}
+  100%{transform: scale(1);}
+}
+
 button:focus, .btn:focus, input:focus, .focus\:outline {
   outline: 3px solid var(--focus-outline);
   outline-offset: 2px;
 }
 
+/* Lucide icons: pastel-accent, larger; Framer microanim shadow effect */
+svg, .icon, .lucide-react {
+  filter: drop-shadow(0 1.5px 4px #fbbf241A) drop-shadow(0 2px 12px #4e73df12);
+  vertical-align: middle;
+  transition: filter .17s, transform .13s;
+  width: 1.7em;
+  height: 1.7em;
+}
+
+/* Links: animated, playful colors */
 a {
   @apply text-primary underline-offset-2 decoration-wavy font-titleAlt transition-colors duration-150;
   text-decoration: none;
+  transition: color .22s cubic-bezier(.37,1.13,.44,.96);
 }
 a:hover {
   color: #fbbf24;
+  text-shadow: 0 2px 9px #fbbf2435;
+  transform: scale(1.025) translateY(-1px);
+}
+
+/* Card grids and dashboard improvements */
+.dashboard-grid {
+  @apply grid gap-8 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-min w-full max-w-6xl mx-auto mt-4;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid { grid-template-columns: 1fr; gap: 1.4rem; }
+}
+
+/* Drawing Card accent/featured top effect */
+.drawing-card-top {
+  border: 4px solid var(--accent);
+  box-shadow: 0 7px 22px #fbbf2441;
+  transform: scale(1.035);
+  position: relative;
+}
+
+/* Guess input feedback — animated shake/shimmer */
+@keyframes guess-shake {
+  0% {transform: translateX(0);}
+  20%{transform: translateX(-4px);}
+  40%{transform: translateX(5px);}
+  60%{transform: translateX(-3px);}
+  80%{transform: translateX(3px);}
+  100%{transform: translateX(0);}
+}
+input.input-guess-wrong {
+  animation: guess-shake 0.33s cubic-bezier(.8,.15,.42,1.17);
+  border-color: var(--error) !important;
+}
+
+/* Animations: fade-in, pop, bounce */
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in-up {
+    animation: fadeinup .67s cubic-bezier(.62,1.2,.45,1.15);
+  }
+  .fade-in-pop {
+    animation: fadepop .49s cubic-bezier(.62,1.6,.41,1.13);
+  }
+}
+@keyframes fadeinup {
+  from {opacity: 0; transform: translateY(28px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+@keyframes fadepop {
+  0% { opacity: 0; transform: scale(.72);}
+  60%{ opacity: 1; transform: scale(1.11);}
+  100%{ opacity: 1; transform: scale(1);}
+}
+
+/* Soft floating action button shadow effect */
+.shadow-playful {
+  box-shadow: 0 1px 6px 0 rgba(76,122,211,0.09), 0 0px 24px 8px rgba(251,191,36,0.09) !important;
+}
+
+::-webkit-scrollbar {
+  height: 0.6em;
+  background: #e4f0ff33;
+}
+::-webkit-scrollbar-thumb {
+  background: #b3cdfb75;
+  border-radius: 7px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #aac6fdde;
 }
