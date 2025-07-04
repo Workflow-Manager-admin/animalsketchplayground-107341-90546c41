@@ -212,86 +212,120 @@ export default function Drawing({ user, onBack }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[#e4f0ff] to-[#f6fff9] px-3 py-7 relative">
+    <div
+      className="flex flex-col bg-gradient-to-br from-[#e4f0ff] to-[#f6fff9] min-h-screen min-w-0 items-center px-0 pt-0 pb-0 relative"
+      style={{
+        height: "100dvh",
+        paddingBottom: 0,
+        paddingTop: 0,
+        overflowX: "hidden",
+      }}
+    >
       <button
         onClick={onBack}
-        className="btn btn-link absolute top-4 left-4 btn-sm text-primary font-titleAlt"
+        className="btn btn-link absolute top-3 left-3 z-40 btn-sm text-primary font-titleAlt"
         disabled={uploading}
         tabIndex={uploading ? -1 : 0}
+        style={{ background: "rgba(255,255,255,0.5)", borderRadius: "32px", boxShadow: "0 2px 13px #e4f0ff4B" }}
       >
         <ArrowLeft /> Back
       </button>
-      <motion.h1 className="font-titleAlt text-3xl md:text-4xl text-primary mb-3 flex gap-2 fade-in-pop" layout>
-        <span className="text-accent-pink">🎨</span> Add a Drawing!
-      </motion.h1>
-      <PromptSpin onPrompt={handlePrompt} />
-      {/* Show error banner below spinner if error related to prompt/flow.
-          Show Retry button only if an upload was submitted and failed (not prompt-missing error). */}
-      <ErrorBanner
-        message={error}
-        showRetry={!!error && submitted && !uploading}
-        onRetry={() => {
-          setError("");
-          setSuccess(false);
-          setUploading(false);
-          // User can resubmit; DrawingCanvas will call handleFinishDrawing on 'Submit!'
-          setSubmitted(false);
-        }}
-      />
-      {prompt && (
-        <div className="mt-4 w-full max-w-md drawing-canvas-main fade-in-up">
-          <DrawingCanvas
-            disabled={uploading}
-            prompt={prompt}
-            onFinish={handleFinishDrawing}
-          />
-          {/* Debug step log below canvas, only visible while uploading or on upload failure */}
-          {(uploading || (!!error && submitted)) && debugSteps.length > 0 && (
-            <div className="mt-3 border border-slate-200 rounded bg-white/95 p-3 font-mono text-xs max-h-44 overflow-y-auto">
-              <div className="mb-2 font-bold text-slate-500">Upload Debug Steps:</div>
-              <ul>
-                {debugSteps.map((step, idx) => (
-                  <li
-                    key={idx}
-                    className={
-                      (step.type === "error"
-                        ? "text-error"
-                        : step.type === "success"
-                        ? "text-success"
-                        : "text-accent-pink") + " mb-1"
-                    }
-                  >
-                    [{step.timestamp}] {step.step}
-                  </li>
-                ))}
-              </ul>
+      <div className="flex flex-col flex-1 justify-center items-center w-full max-w-lg mx-auto min-h-0 h-full" style={{height: '100dvh', minHeight: 0}}>
+        {/* Move prompt spinner below canvas for vertical UX */}
+        <motion.h1 className="font-titleAlt text-3xl md:text-4xl text-primary mb-1 mt-5 flex gap-2 fade-in-pop" layout>
+          <span className="text-accent-pink">🎨</span>
+          <span>Add a Drawing!</span>
+        </motion.h1>
+        {prompt ? (
+          // CANVAS FIRST for immersive layout, controls below
+          <div className="flex flex-col flex-1 items-center w-full mt-0 mb-0 pt-1 pb-0 max-w-lg gap-0 fade-in-up min-h-0">
+            <div className="w-full flex-1 min-h-0 flex items-center justify-stretch drawing-canvas-main p-1 bg-gradient-to-tr from-background-gradient1 to-background-gradient2 rounded-t-3xl" style={{borderRadius:"2rem 2rem 2rem 2rem", flexGrow:1, minHeight:0, maxHeight:"calc(62dvh)"}}>
+              {/* DrawingCanvas should fill available space, get its height from parent */}
+              <DrawingCanvas
+                disabled={uploading}
+                prompt={prompt}
+                onFinish={handleFinishDrawing}
+                height="min(65vh,68vw,480px)" // hint for canvas to use tall space (handled in DrawingCanvas.js)
+              />
             </div>
-          )}
-        </div>
-      )}
-      {!prompt && !uploading && (
-        <div className="mt-5 text-base text-accent-pink/90 font-titleAlt flex items-center gap-2 fade-in-up">
-          <AlertTriangle className="w-4 h-4 mr-1" /> Spin for an animal prompt to start!
-        </div>
-      )}
-      {uploading && (
-        <div className="flex flex-col gap-2 items-center mt-8">
-          <motion.div
-            initial={{ scale: 0.8, rotate: -12 }}
-            animate={{
-              scale: [0.8, 1.1, 1],
-              rotate: [0, 14, 0],
-            }}
-            transition={{ repeat: Infinity, duration: 1.18, repeatType: "reverse" }}
-            className="bg-accent/90 rounded-full p-5 drop-shadow-xl mascot-img flex items-center justify-center"
-          >
-            <Loader2 className="animate-spin w-14 h-14 text-primary" />
-          </motion.div>
-          <div className="font-titleAlt text-lg text-accent-pink mt-2 tracking-tight">
-            Uploading your amazing doodle...
+            {/* Spinner and error below, tight gap */}
+            <div className="flex flex-col items-center px-1 pt-3 pb-2 w-full">
+              <PromptSpin onPrompt={handlePrompt} />
+              <ErrorBanner
+                message={error}
+                showRetry={!!error && submitted && !uploading}
+                onRetry={() => {
+                  setError("");
+                  setSuccess(false);
+                  setUploading(false);
+                  setSubmitted(false);
+                }}
+              />
+              {(uploading || (!!error && submitted)) && debugSteps.length > 0 && (
+                <div className="mt-2 border border-slate-200 rounded bg-white/95 p-2 font-mono text-xs max-h-32 overflow-y-auto w-full">
+                  <div className="mb-1 font-bold text-slate-500">Upload Debug Steps:</div>
+                  <ul>
+                    {debugSteps.map((step, idx) => (
+                      <li
+                        key={idx}
+                        className={
+                          (step.type === "error"
+                            ? "text-error"
+                            : step.type === "success"
+                            ? "text-success"
+                            : "text-accent-pink") + " mb-0.5"
+                        }
+                      >
+                        [{step.timestamp}] {step.step}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          // No prompt, show spinner at top, then info
+          <>
+            <div className="flex flex-col flex-grow w-full items-center pt-6 pb-2 fade-in-up">
+              <PromptSpin onPrompt={handlePrompt} />
+              <ErrorBanner
+                message={error}
+                showRetry={!!error && submitted && !uploading}
+                onRetry={() => {
+                  setError("");
+                  setSuccess(false);
+                  setUploading(false);
+                  setSubmitted(false);
+                }}
+              />
+              {!uploading && (
+                <div className="mt-5 text-base text-accent-pink/90 font-titleAlt flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 mr-1" /> Spin for an animal prompt to start!
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        {uploading && (
+          <div className="fixed top-0 left-0 w-full h-full bg-white/60 z-40 flex flex-col gap-2 items-center justify-center">
+            <motion.div
+              initial={{ scale: 0.8, rotate: -12 }}
+              animate={{
+                scale: [0.8, 1.1, 1],
+                rotate: [0, 14, 0],
+              }}
+              transition={{ repeat: Infinity, duration: 1.18, repeatType: "reverse" }}
+              className="bg-accent/90 rounded-full p-5 drop-shadow-xl mascot-img flex items-center justify-center"
+            >
+              <Loader2 className="animate-spin w-14 h-14 text-primary" />
+            </motion.div>
+            <div className="font-titleAlt text-lg text-accent-pink mt-2 tracking-tight">
+              Uploading your amazing doodle...
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

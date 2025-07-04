@@ -7,7 +7,12 @@ import { motion, AnimatePresence } from "framer-motion";
  * Integrates clean toggling between pencil and eraser modes, allowing smooth transition and proper stroke/eraser handling.
  */
 // PUBLIC_INTERFACE
-export default function DrawingCanvas({ onFinish, disabled = false, prompt }) {
+/**
+ * PUBLIC_INTERFACE
+ * DrawingCanvas renders a canvas area that fills as much height as possible, with controls docked beneath.
+ * Accepts optional `height` prop to override or hint vertical sizing for flexibility.
+ */
+export default function DrawingCanvas({ onFinish, disabled = false, prompt, height }) {
   const canvasRef = useRef();
   const [drawing, setDrawing] = useState(false);
   const [timer, setTimer] = useState(45);
@@ -145,52 +150,85 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt }) {
   // Icon for current tool
   const toolIcon = tool === "pen" ? <Pencil /> : <Eraser />;
 
+  // Vertical layout: timer above, canvas fills space, controls and info below.
+  // Maximize canvas height using flexbox and dynamic sizing.
+  // Responsive tweaks for mobile.
+  // The parent is expected to be flex-1 or have plenty of height.
+
+  // Compute canvas height: use the `height` prop if provided (css string or number),
+  // otherwise default to a tall value based on viewport, capped for desktop.
+  let cssCanvasHeight = height
+    ? height
+    : window.innerHeight
+    ? Math.max(window.innerHeight * 0.54, 340)
+    : 380;
+
+  // Ensure string value for inline style
+  if (typeof cssCanvasHeight === "number") cssCanvasHeight = cssCanvasHeight + "px";
+
   return (
-    <motion.div layout className="w-full flex flex-col items-center">
-      <AnimatePresence>
-        {timer > 0 && (
-          <motion.div
-            className="mb-2 flex flex-col items-center"
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 160 }}
-          >
-            <div className="text-xs text-gray-400 mb-1 font-titleAlt">Timer</div>
-            <span
-              className="inline-block font-titleAlt text-3xl px-3 py-1 rounded-lg bg-highlight/90 text-white shadow"
-              style={{ letterSpacing: "0.04em" }}
+    <motion.div
+      layout
+      className="w-full flex flex-col items-center justify-start px-0"
+      style={{ flex: "1 1 0%", minHeight: "0px" }}
+    >
+      <div className="flex w-full justify-center fade-in-up" style={{ minHeight: 0 }}>
+        <AnimatePresence>
+          {timer > 0 && (
+            <motion.div
+              className="mb-2 flex flex-col items-center"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 160 }}
             >
-              {timer}s
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <canvas
-        ref={canvasRef}
-        className={`w-full touch-none rounded-lg bg-gradient-to-tr from-background-gradient1 to-background-gradient2 shadow-lg ${
-          tool === "pen" ? "cursor-crosshair" : "cursor-pointer"
-        }`}
-        width={480}
-        height={window.innerHeight ? Math.round(window.innerHeight * 0.38) : 350}
+              <div className="text-xs text-gray-400 mb-1 font-titleAlt">Timer</div>
+              <span
+                className="inline-block font-titleAlt text-3xl px-3 py-1 rounded-lg bg-highlight/90 text-white shadow"
+                style={{ letterSpacing: "0.04em" }}
+              >
+                {timer}s
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <div
+        className="relative w-full flex items-center justify-center"
         style={{
-          width: "100%",
-          height: "min(52vh, 420px)",
-          minHeight: "250px",
-          maxHeight: "62vh",
-          maxWidth: "98vw",
-          border: "2px solid #e4f0ff",
-          objectFit: "contain",
-          display: "block",
+          flexGrow: 1,
+          minHeight: "min(260px,36vh)",
+          maxHeight: "65vh",
         }}
-        onMouseDown={startDraw}
-        onMouseUp={endDraw}
-        onMouseOut={endDraw}
-        onMouseMove={draw}
-        onTouchStart={startDraw}
-        onTouchEnd={endDraw}
-        onTouchMove={draw}
-      />
-      <div className="flex gap-4 mt-2 items-center">
+      >
+        <canvas
+          ref={canvasRef}
+          className={`w-full touch-none rounded-xl bg-gradient-to-tr from-background-gradient1 to-background-gradient2 shadow-xl ${tool === "pen" ? "cursor-crosshair" : "cursor-pointer"}`}
+          width={480}
+          height={parseInt(cssCanvasHeight) || 400} // px, matches visual height
+          style={{
+            width: "100%",
+            height: cssCanvasHeight,
+            minHeight: "210px",
+            maxHeight: "440px",
+            maxWidth: "98vw",
+            border: "2px solid #e4f0ff",
+            objectFit: "contain",
+            display: "block",
+            boxSizing: "border-box",
+            touchAction: "none",
+            background: "linear-gradient(135deg,var(--background-gradient1),var(--background-gradient2))"
+          }}
+          onMouseDown={startDraw}
+          onMouseUp={endDraw}
+          onMouseOut={endDraw}
+          onMouseMove={draw}
+          onTouchStart={startDraw}
+          onTouchEnd={endDraw}
+          onTouchMove={draw}
+        />
+      </div>
+      {/* Controls and status, docked below in tighter vertical block */}
+      <div className="flex flex-row flex-wrap gap-2 mt-2 items-center justify-center w-full" style={{ paddingBottom: 2, marginTop: 10 }}>
         <button
           title="Undo/Clear"
           className="btn btn-sm btn-outline btn-secondary rounded-full"
@@ -200,9 +238,7 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt }) {
         </button>
         <button
           title={tool === "pen" ? "Switch to Eraser (E)" : "Switch to Pencil (P)"}
-          className={`btn btn-sm btn-outline ${
-            tool === "eraser" ? "btn-accent" : ""
-          } rounded-full`}
+          className={`btn btn-sm btn-outline ${tool === "eraser" ? "btn-accent" : ""} rounded-full`}
           onClick={toggleTool}
         >
           {toolIcon}
@@ -215,23 +251,23 @@ export default function DrawingCanvas({ onFinish, disabled = false, prompt }) {
         >
           <Send className="mr-1" /> Submit!
         </motion.button>
-      </div>
-      <div className="text-xs text-slate-400 mt-1">
-        Please draw a <b>{prompt}</b>!{" "}
-        <span className="ml-2 text-gray-500">
-          {tool === "pen"
-            ? "(Pencil: click or tap to draw)"
-            : "(Eraser: click or tap to erase)"}
+        <span className="ml-3 text-xs text-slate-400 inline-block">
+          <b>{prompt}</b>
         </span>
       </div>
-      {!canSubmit && (
-        <div className="text-xs text-warning mt-1">
-          Draw for at least 10s to enable submit.
-        </div>
-      )}
+      <div className="text-xs text-slate-400 w-full text-center mt-2">
+        <span>
+          {tool === "pen"
+            ? "✏️ Draw (touch or mouse)"
+            : "🧽 Erase (touch or mouse)"}
+        </span>
+        {!canSubmit && (
+          <span className="ml-2 text-warning">Draw for at least 10s to enable submit.</span>
+        )}
+      </div>
       {timer <= 0 && (
         <motion.div
-          className="alert alert-error mt-2"
+          className="alert alert-error mt-2 text-center"
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
